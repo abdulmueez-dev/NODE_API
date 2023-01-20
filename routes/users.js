@@ -2,9 +2,12 @@ const express = require('express');
 const user = require('../models/user');
 const router = express.Router();
 const User= require('../models/user')
+const jwt = require('jsonwebtoken')
+const authenticate= require('../middleware/authenticate')
+
 
 // GETTING ALL
-router.get('/',async(req,res)=>{
+router.get('/', async(req,res)=>{
     try{
         const users =  await User.find()
         res.json(users)
@@ -16,16 +19,26 @@ router.get('/',async(req,res)=>{
 
 // GETTING ONE
 router.get('/:id',getUser,(req,res)=>{
-    res.send(res.user)
+    res.send(req.rootUser)
 })
 
 
 // CREATING ONE
 router.post('/',async(req,res)=>{
+    let token;
     const user= new User({
         name:req.body.name,
         email:req.body.email
     })
+
+    // Authentication
+    token = await user.generateAuthToken();
+    // console.log(token)
+    res.cookie('jwtoken',token,{
+        expires: new Date(Date.now()+25892000000),
+        httpOnly:true
+    })
+
     try{
         const newUser=await user.save();
         res.status(201).json(newUser)
@@ -36,7 +49,7 @@ router.post('/',async(req,res)=>{
 
 
 // UPDATING ONE
-router.put('/:id',getUser,async(req,res)=>{
+router.put('/:id',getUser,authenticate,async(req,res)=>{
 
     if (req.body.name != null){
         res.user.name = req.body.name

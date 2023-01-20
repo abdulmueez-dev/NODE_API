@@ -2,6 +2,7 @@ require('dotenv').config();
 const express =require("express");
 const app =express();
 const mongoose =require("mongoose");
+const cookieParser = require('cookie-parser')
 
 // CONNECTING TO DATABASE
 mongoose.connect(process.env.DATABASE_URL,{ useNewUrlParser: true });
@@ -14,6 +15,7 @@ app.use(express.json());
 
 // CREATING ROUTES
 const usersRouter=require('./routes/users')
+app.use(cookieParser())
 app.use('/users',usersRouter)
 
 
